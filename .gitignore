@@ -1,0 +1,8 @@
+# Ignore .iml files
+*.iml
+
+# Ignore the .idea directory (IDE configuration files)
+.idea/
+
+# Ignore virtual environment directory
+venv/
