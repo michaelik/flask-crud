@@ -3,5 +3,6 @@ psycopg2-binary
 Flask-SQLAlchemy
 marshmallow
 flask-marshmallow
+marshmallow-sqlalchemy
 flask-restful
 

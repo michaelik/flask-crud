@@ -17,7 +17,8 @@ class UserController(Resource):
             self.user_service.create_user(user_dto)
             return {'message': 'user created'}, 201
         except ValidationError as e:
-            raise e  # Let error handler process this
+            # Let error handler process this
+            raise e
         except Exception as e:
             return {'message': 'An error occurred', 'details': str(e)}, 500
 

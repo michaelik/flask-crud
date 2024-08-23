@@ -1,5 +1,4 @@
 import logging
-from flask import jsonify
 from marshmallow import ValidationError
 from errors.user_not_found import UserNotFoundException
 
@@ -15,24 +14,25 @@ console_handler.setFormatter(formatter)
 
 # Add the handler to the logger
 logger.addHandler(console_handler)
-logger.setLevel(logging.DEBUG)  # Global log level
+# Global log level
+logger.setLevel(logging.DEBUG)
 
 
 def register_error_handlers(app):
     @app.errorhandler(UserNotFoundException)
     def handle_user_not_found_error(error):
-        logger.error(f'User not found: {str(error)}')
-        return jsonify({'message': str(error)}), 404
+        logger.error(f'User not found: {str(error.messages)}')
+        return {'message': str(error.messages)}, 404
 
     @app.errorhandler(ValidationError)
     def handle_validation_error(error):
         logger.error(f'Validation error: {error.messages}')
-        return jsonify({'errors': error.messages}), 400
+        return {'errors': error.messages}, 400
 
     @app.errorhandler(Exception)
     def handle_generic_exception(error):
-        logger.critical(f'An unexpected error occurred: {str(error)}')
-        return jsonify({'message': str(error)}), 500
+        logger.critical(f'An unexpected error occurred: {str(error.messages)}')
+        return {'message': str(error.messages)}, 500
     #
     # @app.errorhandler(400)
     # def bad_request(error):
