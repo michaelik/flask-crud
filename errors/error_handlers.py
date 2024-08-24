@@ -1,53 +1,79 @@
-import logging
 from marshmallow import ValidationError
 from errors.user_not_found import UserNotFoundException
+from werkzeug.exceptions import MethodNotAllowed, NotFound, BadRequest, InternalServerError
+from config.logconfig import LogConfig
 
-# Create a logger
-logger = logging.getLogger(__name__)
-
-# Create a console handler for logging
-console_handler = logging.StreamHandler()
-
-# Define a formatter and attach it to the handler
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(formatter)
-
-# Add the handler to the logger
-logger.addHandler(console_handler)
-# Global log level
-logger.setLevel(logging.DEBUG)
-
+# Configure logger using LogConfig class
+logger = LogConfig.configure_logging()
 
 def register_error_handlers(app):
     @app.errorhandler(UserNotFoundException)
     def handle_user_not_found_error(error):
-        logger.error(f'User not found: {str(error.messages)}')
-        return {'message': str(error.messages)}, 404
+        response = {
+            'success': False,
+            'status': 404,
+            'message': str(error)
+        }
+        logger.error(f'User not found: {str(error)}')
+        return response, 404
 
     @app.errorhandler(ValidationError)
     def handle_validation_error(error):
+        response = {
+            'success': False,
+            'status': 400,
+            'message': str(error.messages)
+        }
         logger.error(f'Validation error: {error.messages}')
-        return {'errors': error.messages}, 400
+        return response, 400
+
+    @app.errorhandler(MethodNotAllowed)
+    def handle_method_not_allowed(error):
+        response = {
+            'success': False,
+            'status': 405,
+            'message': str(error)
+        }
+        logger.error(f'Method not allowed: {str(error)}')
+        return response, 405
+
+    @app.errorhandler(NotFound)
+    def handle_not_found_error(error):
+        response = {
+            'success': False,
+            'status': 404,
+            'message': 'Resource not found'
+        }
+        logger.warning(f'Resource not found: {str(error)}')
+        return response, 404
+
+    @app.errorhandler(BadRequest)
+    def handle_bad_request(error):
+        response = {
+            'success': False,
+            'status': 400,
+            'message': str(error)
+        }
+        logger.warning(f'Bad request: {str(error)}')
+        return response, 400
+
+    @app.errorhandler(InternalServerError)
+    def handle_internal_server_error(error):
+        response = {
+            'success': False,
+            'status': 500,
+            'message': 'Internal server error'
+        }
+        logger.error(f'Internal server error: {str(error)}')
+        return response, 500
 
     @app.errorhandler(Exception)
     def handle_generic_exception(error):
-        logger.critical(f'An unexpected error occurred: {str(error.messages)}')
-        return {'message': str(error.messages)}, 500
-    #
-    # @app.errorhandler(400)
-    # def bad_request(error):
-    #     logger.setLevel(logging.WARNING)
-    #     logger.critical(f'An error occurred: {str(error)}')
-    #     return jsonify({'message': 'Bad request'}), 400
-    #
-    # @app.errorhandler(404)
-    # def not_found(error):
-    #     logger.setLevel(logging.CRITICAL)
-    #     logger.critical(f'An error occurred: {str(error)}')
-    #     return jsonify({'message': 'Not found'}), 404
-    #
-    # @app.errorhandler(500)
-    # def internal_server_error(error):
-    #     logger.setLevel(logging.CRITICAL)
-    #     logger.critical(f'An error occurred: {str(error)}')
-    #     return jsonify({'message': 'Internal server error'}), 500
+        response = {
+            'success': False,
+            'status': 500,
+            'message': str(error)
+        }
+        logger.critical(f'An unexpected error occurred: {str(error)}')
+        return response, 500
+

@@ -6,3 +6,5 @@
 
 # Ignore virtual environment directory
 venv/
+
+.env

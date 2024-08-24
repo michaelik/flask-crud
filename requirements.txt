@@ -1,8 +1,12 @@
-flask
+flask~=3.0.3
 psycopg2-binary
 Flask-SQLAlchemy
-marshmallow
+marshmallow~=3.22.0
 flask-marshmallow
 marshmallow-sqlalchemy
 flask-restful
+python-dotenv~=1.0.1
 
+
+Werkzeug~=3.0.3
+SQLAlchemy~=2.0.32

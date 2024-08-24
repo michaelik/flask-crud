@@ -1,3 +1,4 @@
+import os
 from os import environ
 from flask import Flask
 from db import db
@@ -38,4 +39,7 @@ api.add_resource(UserController, '/users', '/users/<int:id>')
 register_error_handlers(app)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=4000, debug=True)
+    APP_PORT = int(os.getenv("APP_PORT", 4000))  # Default port to 4000 if not set
+    APP_HOST = os.getenv("APP_HOST", "0.0.0.0")  # Default host to 0.0.0.0 if not set
+    APP_DEBUG = os.getenv("APP_DEBUG", "True").lower() == 'true'  # Convert to boolean
+    app.run(host=APP_HOST, port=APP_PORT, debug=APP_DEBUG)

@@ -1,1 +1,2 @@
-from config.config import config
+from .config import config
+from .logconfig import LogConfig
