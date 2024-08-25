@@ -28,8 +28,8 @@ class UserService:
             raise UserNotFoundException(f"User with id {id} not found")
         user.username = user_dto['username']
         user.email = user_dto['email']
-        self.user_repository.save(user)
-        return True
+        updated_user = self.user_repository.save(user)
+        return UserMapper.to_dto(updated_user)
 
     def delete_user(self, id):
         user = self.user_repository.find_by_id(id)

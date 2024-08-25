@@ -2,8 +2,7 @@ from flask_restful import Resource
 from flask import request
 from dtos.request.user_request_dto import UserRequestDTO
 from services.user_service import UserService
-from errors.user_not_found import UserNotFoundException
-from marshmallow import ValidationError
+from dtos.response_helper import ResponseHelper
 
 
 class UserController(Resource):
@@ -12,44 +11,46 @@ class UserController(Resource):
         self.user_request_dto = UserRequestDTO()
 
     def post(self):
-        try:
-            user_dto = self.user_request_dto.load(request.get_json())
-            self.user_service.create_user(user_dto)
-            return {'message': 'user created'}, 201
-        except ValidationError as e:
-            # Let error handler process this
-            raise e
-        except Exception as e:
-            return {'message': 'An error occurred', 'details': str(e)}, 500
+        user_dto = self.user_request_dto.load(request.get_json())
+        self.user_service.create_user(user_dto)
+        return ResponseHelper.base_response(
+            True,
+            201,
+            'User created successfully'
+        )
 
     def get(self, id=None):
-        try:
-            if id:
-                user = self.user_service.get_user(id)
-                return {'user': user}, 200
-            else:
-                users = self.user_service.get_all_users()
-                return users, 200
-        except UserNotFoundException as e:
-            return {'message': str(e)}, 404
-        except Exception as e:
-            return {'message': 'An error occurred', 'details': str(e)}, 500
+        if id:
+            user = self.user_service.get_user(id)
+            return ResponseHelper.base_response(
+                True,
+                200,
+                'User retrieved successfully',
+                user
+            )
+        else:
+            users = self.user_service.get_all_users()
+            return ResponseHelper.base_response(
+                True,
+                200,
+                'Users retrieved successfully',
+                users
+            )
 
     def put(self, id):
-        try:
-            user_dto = request.get_json()
-            self.user_service.update_user(id, user_dto)
-            return {'message': 'user updated'}, 200
-        except UserNotFoundException as e:
-            return {'message': str(e)}, 404
-        except Exception as e:
-            return {'message': 'An error occurred', 'details': str(e)}, 500
+        user_dto = request.get_json()
+        updated_user = self.user_service.update_user(id, user_dto)
+        return ResponseHelper.base_response(
+            True,
+            200,
+            'User updated successfully',
+            updated_user
+        )
 
     def delete(self, id):
-        try:
-            self.user_service.delete_user(id)
-            return {'message': 'user deleted'}, 200
-        except UserNotFoundException as e:
-            return {'message': str(e)}, 404
-        except Exception as e:
-            return {'message': 'An error occurred', 'details': str(e)}, 500
+        self.user_service.delete_user(id)
+        return ResponseHelper.base_response(
+            True,
+            200,
+            'User deleted successfully'
+        )
