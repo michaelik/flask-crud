@@ -38,7 +38,7 @@ class UserController(Resource):
             )
 
     def put(self, id):
-        user_dto = request.get_json()
+        user_dto = self.user_request_dto.load(request.get_json())
         updated_user = self.user_service.update_user(id, user_dto)
         return ResponseHelper.base_response(
             True,
