@@ -6,7 +6,7 @@ flask-marshmallow
 marshmallow-sqlalchemy
 flask-restful
 python-dotenv~=1.0.1
-
-
+pytest
+pytest-flask
 Werkzeug~=3.0.3
 SQLAlchemy~=2.0.32
