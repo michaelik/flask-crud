@@ -12,14 +12,15 @@ class TestUserController:
     @pytest.fixture(scope='module')
     def test_app(self):
         """Fixture to create a new app instance for testing."""
+
         app = create_app()
-        app.config.from_object(config['testing'])
-        logger.info("Using configuration: %s", config['testing'].__dict__)
-        with app.app_context():
-            db.create_all()
-            yield app
-            db.session.remove()  # Ensure session is removed after tests
-            db.drop_all()
+        if not app.config.from_object(config['development']):
+            logger.info("Using configuration: %s", config['testing'].__dict__)
+            with app.app_context():
+                db.create_all()
+                yield app
+                db.session.remove()  # Ensure session is removed after tests
+                db.drop_all()
 
     @pytest.fixture(autouse=True)
     def clean_database(self, test_app):

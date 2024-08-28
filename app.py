@@ -29,7 +29,7 @@ def configure_app(app: Flask):
     """
     env = environ.get('FLASK_ENV', 'development')
     app.config.from_object(config[env])
-    logger.info("Using configuration: %s", config[env].__dict__)
+    app.config.from_object(config['testing'])
 
 
 def initialize_extensions(app: Flask):
@@ -40,12 +40,15 @@ def initialize_extensions(app: Flask):
     Marshmallow(app)
     Api(app)
 
-    with app.app_context():
-        try:
-            db.create_all()  # Create tables if they do not exist
-            logger.info("Database tables created successfully.")
-        except Exception as e:
-            logger.error(f"Error creating tables: {e}")
+    # Only create tables in the PostgreSQL database for the main app
+    if not app.config.from_object(config['testing']):
+        with app.app_context():
+            try:
+                # if app.config.from_object(config[env]):
+                db.create_all()  # Create tables if they do not exist
+                logger.info("Database tables created successfully.")
+            except Exception as e:
+                logger.error(f"Error creating tables: {e}")
 
 
 def setup_routes(app: Flask):
