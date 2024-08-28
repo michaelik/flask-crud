@@ -44,7 +44,6 @@ def initialize_extensions(app: Flask):
     if not app.config.from_object(config['testing']):
         with app.app_context():
             try:
-                # if app.config.from_object(config[env]):
                 db.create_all()  # Create tables if they do not exist
                 logger.info("Database tables created successfully.")
             except Exception as e:
