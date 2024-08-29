@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.orm import scoped_session, sessionmaker
 from app import create_app
-from config import config, LogConfig
+from config import LogConfig
 from models.user import db, User
 
 logger = LogConfig.configure_logging()
@@ -12,12 +12,10 @@ class TestUserController:
     @pytest.fixture(scope='module')
     def test_app(self):
         """Fixture to create a new app instance for testing."""
-        app = create_app()
-        if not app.config.from_object(config['development']):
-            logger.info("Using configuration: %s", config['testing'].__dict__)
-            with app.app_context():
-                db.create_all()
-                yield app
+        app = create_app(environment='testing')
+        with app.app_context():
+            db.create_all()
+            yield app
 
     @pytest.fixture(autouse=True)
     def session_setup(self, test_app):

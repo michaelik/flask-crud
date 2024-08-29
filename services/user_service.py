@@ -1,7 +1,7 @@
 from repositories.user_repository import UserRepository
 from mappers.user_mapper import UserMapper
 from errors.user_not_found import UserNotFoundException
-from db import db
+from models.db import db
 
 
 class UserService:

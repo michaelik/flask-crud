@@ -1,7 +1,7 @@
 import os
 from os import environ
 from flask import Flask
-from db import db
+from models.db import db
 from flask_marshmallow import Marshmallow
 from flask_restful import Api
 from controllers.user_controller import UserController
@@ -11,25 +11,28 @@ from config import config, LogConfig
 logger = LogConfig.configure_logging()
 
 
-def create_app():
+def create_app(environment: str = 'development'):
     """
     Create and configure the Flask application.
     """
     app = Flask(__name__)
-    configure_app(app)
+    configure_app(app, environment)
     initialize_extensions(app)
     setup_routes(app)
     setup_error_handlers(app)
     return app
 
 
-def configure_app(app: Flask):
+def configure_app(app: Flask, environment: str = 'development'):
     """
-    Configure the Flask application from environment variables.
+    Configure the Flask application based on the provided environment.
     """
-    env = environ.get('FLASK_ENV', 'development')
-    app.config.from_object(config[env])
-    app.config.from_object(config['testing'])
+    if environment == 'development':
+        app.config.from_object(config['development'])
+    elif environment == 'testing':
+        app.config.from_object(config['testing'])
+    elif environment == 'production':
+        app.config.from_object(config['production'])
 
 
 def initialize_extensions(app: Flask):
@@ -39,15 +42,13 @@ def initialize_extensions(app: Flask):
     db.init_app(app)
     Marshmallow(app)
     Api(app)
-
     # Only create tables in the PostgreSQL database for the main app
-    if not app.config.from_object(config['testing']):
-        with app.app_context():
-            try:
-                db.create_all()  # Create tables if they do not exist
-                logger.info("Database tables created successfully.")
-            except Exception as e:
-                logger.error(f"Error creating tables: {e}")
+    with app.app_context():
+        try:
+            db.create_all()  # Create tables if they do not exist
+            logger.info("Database tables created successfully.")
+        except Exception as e:
+            logger.error(f"Error creating tables: {e}")
 
 
 def setup_routes(app: Flask):
@@ -66,7 +67,8 @@ def setup_error_handlers(app: Flask):
 
 
 if __name__ == '__main__':
-    flask_app = create_app()
+    env = environ.get('FLASK_ENV', 'development')
+    flask_app = create_app(environment=env)
     APP_PORT = int(os.getenv("APP_PORT", 4000))  # Default port to 4000 if not set
     APP_HOST = os.getenv("APP_HOST", "0.0.0.0")  # Default host to 0.0.0.0 if not set
     APP_DEBUG = os.getenv("APP_DEBUG", "True").lower() == 'true'  # Convert to boolean
