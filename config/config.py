@@ -29,17 +29,13 @@ class TestingConfig(Config):
     DEBUG = False  # It's generally good practice to disable debugging in tests
     TESTING = True
     DB_NAME = 'test-db.db'
-    # DB_NAME = 'test-db'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-    # SQLALCHEMY_DATABASE_URI = f'sqlite:///{DB_NAME}'
-    # SQLALCHEMY_DATABASE_URI = f'mysql+mysqldb://root:@localhost:3306/{DB_NAME}'
-    # SQLALCHEMY_BINDS = f'sqlite:///{DB_NAME}'
 
 
 class ProductionConfig(Config):
     """Configuration for Production."""
     DEBUG = False  # Disable debugging in production
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DB_URL')  # Use an in-memory database for testing
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DB_URL')
 
 
 config = {
