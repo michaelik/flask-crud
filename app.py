@@ -1,14 +1,18 @@
 import os
 from os import environ
 from flask import Flask
+from flask_pymongo import PyMongo
 from models.db import db
 from flask_marshmallow import Marshmallow
 from flask_restful import Api
 from controllers.user_controller import UserController
 from errors.error_handlers import register_error_handlers
 from config import config, LogConfig
+import flask_profiler
 
 logger = LogConfig.configure_logging()
+
+mongo = PyMongo()
 
 
 def create_app(environment: str = 'development'):
@@ -20,6 +24,10 @@ def create_app(environment: str = 'development'):
     initialize_extensions(app)
     setup_routes(app)
     setup_error_handlers(app)
+    # Initialize Flask-PyMongo with the app
+    mongo.init_app(app)
+    configure_profiler(app)
+
     return app
 
 
@@ -33,6 +41,16 @@ def configure_app(app: Flask, environment: str = 'development'):
         app.config.from_object(config['testing'])
     elif environment == 'production':
         app.config.from_object(config['production'])
+
+
+def configure_profiler(app: Flask):
+    """
+    Configure Flask-Profiler based on the application's configuration.
+    """
+    profiler_config = app.config.get('PROFILER_CONFIG')
+    if profiler_config and profiler_config.get("enabled", False):
+        app.config["flask_profiler"] = profiler_config
+        flask_profiler.init_app(app)
 
 
 def initialize_extensions(app: Flask):

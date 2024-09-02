@@ -1,6 +1,6 @@
 from typing import Optional
-from sqlalchemy.orm import Session
 from models.user import User
+from sqlalchemy.orm import Session
 from repositories.base_repository import BaseRepository
 
 
@@ -13,6 +13,3 @@ class UserRepository(BaseRepository[User]):
             return self.session.query(User).filter_by(email=email).first()
         except Exception as e:
             raise e
-
-# Usage
-# user_repo = UserRepository(db.session)

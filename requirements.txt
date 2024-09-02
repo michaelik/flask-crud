@@ -10,3 +10,6 @@ pytest
 pytest-flask
 Werkzeug~=3.0.3
 SQLAlchemy~=2.0.32
+flask-profiler~=1.8.1
+PyMongo
+Flask-PyMongo

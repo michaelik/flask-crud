@@ -8,10 +8,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_COMMIT_ON_TEARDOWN = False
     CSRF_ENABLED = True
-    DEBUG = True
 
 
 class DevelopmentConfig(Config):
+    DEBUG = True
     """Configuration for Development."""
     DB_USERNAME = os.environ.get('DB_USERNAME', 'default_user')
     DB_PASSWORD = os.environ.get('DB_PASSWORD', 'default_password')
@@ -22,13 +22,36 @@ class DevelopmentConfig(Config):
         'DB_URL',
         f'postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     )
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 10,
+        'max_overflow': 20
+    }
+
+    MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/flask_profiler')
+
+    PROFILER_CONFIG = {
+        "enabled": True,
+        "storage": {
+            "engine": "mongodb",
+            "db": "flask_profiler",
+            "collection": "profiler_data",
+            "MONGO_URL": MONGO_URI
+        },
+        "basicAuth": {
+            "enabled": True,
+            "username": os.environ.get('PROFILER_USERNAME', 'admin'),
+            "password": os.environ.get('PROFILER_PASSWORD', 'password')
+        },
+        "ignore": [
+            "^/static/.*"
+        ]
+    } if DEBUG else None
 
 
 class TestingConfig(Config):
     """Configuration for Testing."""
     DEBUG = False  # It's generally good practice to disable debugging in tests
     TESTING = True
-    DB_NAME = 'test-db.db'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 
