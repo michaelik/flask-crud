@@ -13,3 +13,4 @@ SQLAlchemy~=2.0.32
 flask-profiler~=1.8.1
 PyMongo
 Flask-PyMongo
+prometheus-flask-exporter

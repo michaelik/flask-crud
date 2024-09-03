@@ -1,4 +1,3 @@
-import os
 from os import environ
 from flask import Flask
 from flask_pymongo import PyMongo
@@ -9,9 +8,9 @@ from controllers.user_controller import UserController
 from errors.error_handlers import register_error_handlers
 from config import config, LogConfig
 import flask_profiler
+from prometheus_flask_exporter import PrometheusMetrics
 
 logger = LogConfig.configure_logging()
-
 mongo = PyMongo()
 
 
@@ -24,8 +23,7 @@ def create_app(environment: str = 'development'):
     initialize_extensions(app)
     setup_routes(app)
     setup_error_handlers(app)
-    # Initialize Flask-PyMongo with the app
-    mongo.init_app(app)
+    configure_prometheus_metrics(app, environment)
     configure_profiler(app)
 
     return app
@@ -49,6 +47,7 @@ def configure_profiler(app: Flask):
     """
     profiler_config = app.config.get('PROFILER_CONFIG')
     if profiler_config and profiler_config.get("enabled", False):
+        mongo.init_app(app)
         app.config["flask_profiler"] = profiler_config
         flask_profiler.init_app(app)
 
@@ -60,6 +59,7 @@ def initialize_extensions(app: Flask):
     db.init_app(app)
     Marshmallow(app)
     Api(app)
+
     # Only create tables in the PostgreSQL database for the main app
     with app.app_context():
         try:
@@ -77,6 +77,17 @@ def setup_routes(app: Flask):
     api.add_resource(UserController, '/users', '/users/<int:id>')
 
 
+def configure_prometheus_metrics(app: Flask, environment: str = 'development'):
+    """
+    Register Prometheus metrics
+    """
+    if environment == 'development':
+        metrics = PrometheusMetrics(app, path=app.config['PROMETHEUS_METRICS_ENDPOINT'])
+        logger.debug(f"Prometheus metrics endpoint registered at "
+                     f"{app.config['PROMETHEUS_METRICS_ENDPOINT']}")
+        metrics.info('app_info', 'Application info', version='1.0.0')
+
+
 def setup_error_handlers(app: Flask):
     """
     Register error handlers with the Flask application.
@@ -87,7 +98,7 @@ def setup_error_handlers(app: Flask):
 if __name__ == '__main__':
     env = environ.get('FLASK_ENV', 'development')
     flask_app = create_app(environment=env)
-    APP_PORT = int(os.getenv("APP_PORT", 4000))  # Default port to 4000 if not set
-    APP_HOST = os.getenv("APP_HOST", "0.0.0.0")  # Default host to 0.0.0.0 if not set
-    APP_DEBUG = os.getenv("APP_DEBUG", "True").lower() == 'true'  # Convert to boolean
+    APP_PORT = int(environ.get("APP_PORT", 4000))  # Default port to 4000 if not set
+    APP_HOST = environ.get("APP_HOST", "0.0.0.0")  # Default host to 0.0.0.0 if not set
+    APP_DEBUG = environ.get("APP_DEBUG", "True").lower() == 'true'  # Convert to boolean
     flask_app.run(host=APP_HOST, port=APP_PORT, debug=APP_DEBUG)

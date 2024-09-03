@@ -27,6 +27,9 @@ class DevelopmentConfig(Config):
         'max_overflow': 20
     }
 
+    os.environ['DEBUG_METRICS'] = '1'
+    PROMETHEUS_METRICS_ENDPOINT = '/my-metrics'
+
     MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/flask_profiler')
 
     PROFILER_CONFIG = {
