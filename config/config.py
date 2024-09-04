@@ -17,8 +17,8 @@ class DevelopmentConfig(Config):
     IS_DOCKER = environ.get('IS_DOCKER', 'false').lower() == 'true'
 
     # Set DB_HOST based on the environment
-    DB_HOST = 'flask_db' if IS_DOCKER else 'localhost'
-    MONGO_DB_HOST = 'flask_mongo' if IS_DOCKER else 'localhost'
+    DB_HOST = 'flask_db' if IS_DOCKER else environ.get('DB_HOST', 'localhost')
+    MONGO_DB_HOST = 'flask_mongo' if IS_DOCKER else environ.get('MONGO_DB_HOST', 'localhost')
 
     """Configuration for Development."""
     DB_USERNAME = environ.get('DB_USERNAME', 'default_user')
