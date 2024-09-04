@@ -7,16 +7,13 @@ services:
     build: .
     ports:
       - "4000:4000"
+    env_file:
+      - .env
     environment:
-    - FLASK_ENV=development  # This can be set to production
-    - DB_USERNAME=postgres
-    - DB_PASSWORD=postgres
-    - DB_DATABASE=flask_crud_db
-    - DB_HOST=flask_db
-    - DB_PORT=5432
-    - DB_URL=postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}
+      - IS_DOCKER=true  # Override to true for Docker environment
     depends_on:
       - flask_db
+      - flask_mongo
 
   flask_db:
     container_name: flask_db
@@ -25,10 +22,31 @@ services:
       - "5432:5432"
     environment:
     - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
-    - POSTGRES_DB=flask_crud_db
+    - POSTGRES_PASSWORD=mike
+    - POSTGRES_DB=flask_db
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+
+  flask_mongo:
+    container_name: flask_mongo
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
 
 volumes:
   pgdata:
+  mongodata:

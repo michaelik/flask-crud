@@ -1,4 +1,4 @@
-import os
+from os import environ
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,25 +12,37 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
+
+    # Determine if the app is running inside Docker
+    IS_DOCKER = environ.get('IS_DOCKER', 'false').lower() == 'true'
+
+    # Set DB_HOST based on the environment
+    DB_HOST = 'flask_db' if IS_DOCKER else 'localhost'
+    MONGO_DB_HOST = 'flask_mongo' if IS_DOCKER else 'localhost'
+
     """Configuration for Development."""
-    DB_USERNAME = os.environ.get('DB_USERNAME', 'default_user')
-    DB_PASSWORD = os.environ.get('DB_PASSWORD', 'default_password')
-    DB_NAME = os.environ.get('DB_NAME', 'default_database')
-    DB_HOST = os.environ.get('DB_HOST', 'localhost')
-    DB_PORT = int(os.environ.get('DB_PORT', '5432'))
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
+    DB_USERNAME = environ.get('DB_USERNAME', 'default_user')
+    DB_PASSWORD = environ.get('DB_PASSWORD', 'default_password')
+    DB_NAME = environ.get('DB_NAME', 'default_database')
+    DB_PORT = int(environ.get('DB_PORT', '5432'))
+
+    SQLALCHEMY_DATABASE_URI = environ.get(
         'DB_URL',
         f'postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     )
+
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 10,
         'max_overflow': 20
     }
 
-    os.environ['DEBUG_METRICS'] = '1'
+    environ['DEBUG_METRICS'] = '1'
     PROMETHEUS_METRICS_ENDPOINT = '/my-metrics'
 
-    MONGO_URI = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/flask_profiler')
+    MONGO_URI = environ.get(
+        'MONGO_URI',
+        f'mongodb://{MONGO_DB_HOST}:27017/flask_profiler'
+    )
 
     PROFILER_CONFIG = {
         "enabled": True,
@@ -42,8 +54,8 @@ class DevelopmentConfig(Config):
         },
         "basicAuth": {
             "enabled": True,
-            "username": os.environ.get('PROFILER_USERNAME', 'admin'),
-            "password": os.environ.get('PROFILER_PASSWORD', 'password')
+            "username": environ.get('PROFILER_USERNAME', 'admin'),
+            "password": environ.get('PROFILER_PASSWORD', 'password')
         },
         "ignore": [
             "^/static/.*"
@@ -61,7 +73,7 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     """Configuration for Production."""
     DEBUG = False  # Disable debugging in production
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DB_URL')
+    SQLALCHEMY_DATABASE_URI = environ.get('DB_URL')
 
 
 config = {
